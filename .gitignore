@@ -1,0 +1,7 @@
+group_vars/*
+!group_vars/all.example
+
+tmp/*
+!tmp/.gitkeep
+
+hosts
