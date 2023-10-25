@@ -8,8 +8,7 @@
   tasks:
     - name: "Parse vofeed"
       tags:
-        - certs
-        - ping
+        - always
       block:
         - name: "Get vofeed"
           get_url:

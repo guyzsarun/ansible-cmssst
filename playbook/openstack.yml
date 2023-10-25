@@ -9,11 +9,8 @@
           environment: "{{ os_vars }}"
           shell: openstack token issue -c id -f value
           register: token
-
         - set_fact: openstack_token="{{ token.stdout }}"
-  tags:
-    - local
-    - remote
+  tags: always
 
 - hosts: local
   connection: local
