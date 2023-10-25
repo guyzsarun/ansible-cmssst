@@ -1,0 +1,30 @@
+---
+- hosts: lxplus8
+  gather_facts: true
+  ignore_errors: true
+
+  tasks:
+    - block:
+        - name: Renew token
+          environment: "{{ os_vars }}"
+          shell: openstack token issue -c id -f value
+          register: token
+
+        - set_fact: openstack_token="{{ token.stdout }}"
+  tags:
+    - local
+    - remote
+
+- hosts: local
+  connection: local
+  tasks:
+    - name: Update local token
+      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus8']['openstack_token'] }}"
+      register: out
+  tags: local
+
+- hosts: cern_vm
+  tasks:
+    - name: Update remote vm token
+      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus8']['openstack_token'] }}"
+  tags: remote
