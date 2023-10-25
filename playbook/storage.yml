@@ -6,8 +6,10 @@
     - ../site.yml
 
   tasks:
-    - name: 'Check storage certificate'
-      tags: certs
+    - name: "Parse vofeed"
+      tags:
+        - certs
+        - ping
       block:
         - name: "Get vofeed"
           get_url:
@@ -23,14 +25,27 @@
             xpath: /root/atp_site/service[{{ rse_query | regex_replace('or $','')}}]
             content: attribute
           register: test
+
         - set_fact:
             temp: "{{ temp | default ([]) + [
-               { 'rse' : item.service.rse + '_' + item.service.flavour,
-                 'endpoint': item.service.endpoint
-               }
+                { 'rse' : item.service.rse + '_' + item.service.flavour,
+                  'endpoint': item.service.endpoint
+                }
               ]}} "
           with_items: "{{ test.matches }}"
 
+    - name: 'Check port accessible'
+      tags: ping
+      wait_for:
+        host: "{{ item.endpoint.split(':')[0] }}"
+        port: "{{ item.endpoint.split(':')[1] }}"
+        state: started
+        timeout: 15
+      with_items: "{{ temp }}"
+
+    - name: 'Check storage certificate'
+      tags: certs
+      block:
         - get_certificate:
             host: "{{ item.endpoint.split(':')[0] }}"
             port: "{{ item.endpoint.split(':')[1] }}"
@@ -47,3 +62,4 @@
           with_items: "{{ cert.results }}"
           loop_control:
             label: "{{ item.item.rse }}"
+
