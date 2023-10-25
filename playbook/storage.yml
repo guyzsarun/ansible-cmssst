@@ -1,0 +1,49 @@
+---
+- hosts: local
+  gather_facts: true
+  ignore_errors: true
+  vars_files:
+    - ../site.yml
+
+  tasks:
+    - name: 'Check storage certificate'
+      tags: certs
+      block:
+        - name: "Get vofeed"
+          get_url:
+            url: https://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml
+            dest: ../tmp/vofeed.xml
+
+        - set_fact:
+            rse_query: "{% for item in site %}
+                            @rse='{{ item }}' or
+                        {% endfor %}"
+        - xml:
+            path: "../tmp/vofeed.xml"
+            xpath: /root/atp_site/service[{{ rse_query | regex_replace('or $','')}}]
+            content: attribute
+          register: test
+        - set_fact:
+            temp: "{{ temp | default ([]) + [
+               { 'rse' : item.service.rse + '_' + item.service.flavour,
+                 'endpoint': item.service.endpoint
+               }
+              ]}} "
+          with_items: "{{ test.matches }}"
+
+        - get_certificate:
+            host: "{{ item.endpoint.split(':')[0] }}"
+            port: "{{ item.endpoint.split(':')[1] }}"
+          run_once: true
+          register: cert
+          with_items: "{{ temp }}"
+
+        - debug:
+            msg: "Certificate expires in: {{ expire_days }} days."
+          vars:
+            expire_days: "{{ (( item.not_after | to_datetime('%Y%m%d%H%M%SZ')) - (ansible_date_time.iso8601 | to_datetime('%Y-%m-%dT%H:%M:%SZ')) ).days }}"
+          changed_when: 'expire_days | int < 30'
+          when:  item.not_after is defined
+          with_items: "{{ cert.results }}"
+          loop_control:
+            label: "{{ item.item.rse }}"
