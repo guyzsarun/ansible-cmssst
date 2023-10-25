@@ -1,0 +1,5 @@
+---
+- name: init voms
+  script: ../scripts/init-voms.sh
+  register: init
+  changed_when: init.rc != 0

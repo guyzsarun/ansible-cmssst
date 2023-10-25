@@ -2,8 +2,7 @@
 - hosts: local
   gather_facts: true
   ignore_errors: true
-  vars_files:
-    - ../site.yml
+  vars_files: ../site.yml
 
   tasks:
     - name: "Parse vofeed"
@@ -62,3 +61,24 @@
           loop_control:
             label: "{{ item.item.rse }}"
 
+- hosts: lxplus8
+  gather_facts: true
+  ignore_errors: true
+  vars_files: ../site.yml
+  tasks:
+    - name: 'Check XRootD version'
+      tags: version
+      block:
+        - import_tasks: init-voms.yml
+
+        - script: ../scripts/xrootd-version.sh "{{ item.endpoint }}"
+          with_items: "{{  hostvars['localhost']['temp'] }}"
+          register: version
+          when: '"XROOTD" in item.rse'
+
+        - debug:
+            msg: "{{ item.stdout | regex_replace('[\\r\\n\\t]+','\n') | split('\n') }}"
+          with_items: "{{ version.results }}"
+          loop_control:
+            label: "{{ item.item.rse }}"
+          when: item.changed
