@@ -1,0 +1,17 @@
+import FWCore.ParameterSet.Config as cms
+
+process = cms.Process('NoSplit')
+process.load('FWCore.MessageService.MessageLogger_cfi')
+
+process.MessageLogger = cms.Service(
+    "MessageLogger", destinations=cms.untracked.vstring('cout'),cout=cms.untracked.PSet(threshold = cms.untracked.string('INFO'))
+)
+
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring('root://cms-xrd-global.cern.ch///store/mc/HC/GenericTTbar/AODSIM/CMSSW_9_2_6_91X_mcRun1_realistic_v2-v2/00000/8ADD04E5-1776-E711-A1BA-FA163E6741E0.root'))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.options = cms.untracked.PSet(wantSummary = cms.untracked.bool(True))
+process.output = cms.OutputModule("PoolOutputModule",
+    outputCommands = cms.untracked.vstring("drop *", "keep recoTracks_globalMuons_*_*"),
+    fileName = cms.untracked.string('output.root'),
+)
+process.out = cms.EndPath(process.output)

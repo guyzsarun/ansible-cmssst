@@ -1,0 +1,15 @@
+---
+- hosts: lxplus8
+  gather_facts: true
+  vars_files: ../site.yml
+  vars:
+      CMSSW_VERSION: CMSSW_12_6_0
+      # CMSSW_VERSION: CMSSW_10_6_4
+      # CMSSW_VERSION: CMSSW_9_2_6
+
+  tasks:
+  - import_tasks: init-voms.yml
+
+  - name: submit crab job
+    loop: "{{ site }}"
+    include_tasks: ./submit_job.yml

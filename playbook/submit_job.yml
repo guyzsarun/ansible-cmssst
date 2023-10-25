@@ -1,0 +1,16 @@
+---
+- name: crab - copy config
+  copy:
+    src: ../scripts/crab/
+    dest: /afs/cern.ch/user/s/sanuntav/tmp
+    force: True
+
+- replace:
+    path: /afs/cern.ch/user/s/sanuntav/tmp/crabConfig.py
+    regexp: '\SITE_NAME'
+    replace: "{{ item }}"
+
+- shell: |
+    cd /afs/cern.ch/user/s/sanuntav/"{{ CMSSW_VERSION }}" && cmsenv
+    cd /afs/cern.ch/user/s/sanuntav/tmp/ && crab submit -c /afs/cern.ch/user/s/sanuntav/tmp/crabConfig.py General.requestName=$(date +%sLS)_ansible_{{ CMSSW_VERSION }}_{{ item }}
+  register: stdout
