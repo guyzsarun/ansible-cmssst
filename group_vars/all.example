@@ -1,0 +1,12 @@
+# openstack credentials
+env_vars:
+    OS_AUTH_URL:
+    OS_PASSWORD:
+    OS_USERNAME:
+    OS_PROJECT_ID:
+    OS_PROJECT_NAME:
+
+# iam credentials
+iam_vars:
+    client_id:
+    client_secret:
