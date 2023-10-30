@@ -7,7 +7,9 @@
   tasks:
     - name: "Parse vofeed"
       tags:
-        - always
+        - ping
+        - certs
+        - version
       block:
         - name: "Get vofeed"
           get_url:
@@ -82,3 +84,52 @@
           loop_control:
             label: "{{ item.item.rse }}"
           when: item.changed
+
+    - name: rucio rse info
+      block:
+        - import_tasks: init-voms.yml
+        - name: rucio get rse
+          shell: |
+            source /cvmfs/cms.cern.ch/rucio/setup-py3.sh
+            rucio-admin  rse info {{ item }}
+          loop: "{{ site }}"
+          register: stdout
+
+        - debug:
+            msg: "{{ item.stdout_lines }}"
+          with_items: "{{ stdout.results }}"
+          loop_control:
+            label: "{{ item.item }}"
+      tags:
+        - rse
+
+
+    - name: global redirector subscription
+      block:
+        - import_tasks: init-voms.yml
+        - name: check subscription
+          shell: xrdmapc --list all cms-xrd-global.cern.ch:1094
+          changed_when: stdout.rc > 0
+          register: stdout
+        - name: check subscription - output
+          debug:
+            msg: "{{ stdout.stdout_lines }}"
+      tags:
+        - global
+
+
+    - name: xrootd subscription
+      block:
+        - name: xrdcopy - global redirector
+          timeout: 60
+          shell: "xrdfs root://cms-xrd-global.cern.ch tail //store/test/xrootd/{{ item }}//store/mc/SAM/GenericTTbar/AODSIM/CMSSW_9_2_6_91X_mcRun1_realistic_v2-v1/00000/A64CCCF2-5C76-E711-B359-0CC47A78A3F8.root"
+          register: stdout
+          changed_when: stdout.rc > 0
+          with_items:
+            - "{{ site }}"
+        # - name: xrdcopy - global redirector - output
+        #   debug:
+        #     msg: "{{ stdout }}"
+        #   tags: debug
+      tags:
+        - copy
