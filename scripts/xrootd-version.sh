@@ -5,6 +5,7 @@ while read line || [ -n "$line" ]; do
   XRD_VERSION="timeout"
   XRD_VERSION=$( timeout 10s xrdfs $line query config version)
   echo $line $XRD_VERSION
+  #./xrootd-stat.sh $line
 done < tmp.txt
 
 rm tmp.txt
