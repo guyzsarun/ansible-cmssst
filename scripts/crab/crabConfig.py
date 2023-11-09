@@ -13,7 +13,7 @@ config.JobType.maxJobRuntimeMin = 60
 
 config.section_('Data')
 config.Data.inputDataset = '/GenericTTbar/HC-CMSSW_9_2_6_91X_mcRun1_realistic_v2-v2/AODSIM'
-config.Data.totalUnits = 100
+config.Data.totalUnits = 500
 config.Data.splitting = 'LumiBased'
 config.Data.outLFNDirBase = '/store/user/rucio/%s/autotest-rucio' % (getUsernameFromCRIC())
 config.Data.outputDatasetTag = 'autotest'
