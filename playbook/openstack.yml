@@ -1,7 +1,6 @@
 ---
-- hosts: lxplus8
+- hosts: lxplus9
   gather_facts: true
-  ignore_errors: true
 
   tasks:
     - block:
@@ -16,12 +15,12 @@
   connection: local
   tasks:
     - name: Update local token
-      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus8']['openstack_token'] }}"
+      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus9']['openstack_token'] }}"
       register: out
   tags: local
 
 - hosts: cern_vm
   tasks:
     - name: Update remote vm token
-      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus8']['openstack_token'] }}"
+      shell: "kubectl config set-credentials cmsrucioprod --token={{ hostvars['lxplus9']['openstack_token'] }}"
   tags: remote
